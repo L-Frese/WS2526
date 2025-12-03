@@ -16,11 +16,38 @@
 #include <sys/socket.h> // for socket creation
 #include <netinet/in.h> //contains constants and structures needed for internet domain addresses
 
+#include <string>
+
 #include "SIMPLESOCKET.H"
+
+class MyServer : public  TCPserver{
+public:
+    MyServer(int port, int bufferSize) : TCPserver(port, bufferSize){};
+protected:
+    string myResponse(string input);
+};
 
 
 int main(){
 	srand(time(nullptr));
-	TCPserver srv(2022,25);
+	MyServer srv(2022,25);
 	srv.run();
+}
+
+string MyServer::myResponse(string input){
+
+    if(input.compare(0,4,"INIT") == 0){
+        //initialize a new game
+
+        return string("OKAY");
+    }
+
+    if(input.compare(0,6,"COORD[") == 0){
+        //verarbeite Koordinaten
+
+        return string("SHOOT");
+    }
+
+
+    return(string("UNKNOWN COMMAND"));
 }
