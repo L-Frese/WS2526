@@ -18,6 +18,7 @@
 
 #include <string>
 
+#include "TASK3.H"
 #include "SIMPLESOCKET.H"
 
 class MyServer : public  TCPserver{
@@ -45,7 +46,11 @@ string MyServer::myResponse(string input){
     if(input.compare(0,6,"COORD[") == 0){
         //verarbeite Koordinaten
 
-        return string("SHOOT");
+        TASK3::ShootResult res;
+        res = TASK3::WATER;
+
+        string msg = to_string(res);
+        return msg;
     }
 
 
