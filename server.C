@@ -36,7 +36,17 @@ int main(){
 }
 
 string MyServer::myResponse(string input){
+    int x,y;
+    int e;
+    e = sscanf(input.c_str(),"COORD[%d,%d]",&x,&y);
+    if(e != 2){
+        return string("ERROR");
+    }else{
+        return(to_string(x+y));
+    }
 
+
+/*
     if(input.compare(0,4,"INIT") == 0){
         //initialize a new game
 
@@ -53,6 +63,6 @@ string MyServer::myResponse(string input){
         return msg;
     }
 
-
+*/
     return(string("UNKNOWN COMMAND"));
 }

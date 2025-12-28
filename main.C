@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : INF3_Prak.cpp
-// Author      : 
+// Author      :
 // Version     :
 // Copyright   : Your copyright notice
 // Description : Hello World in C, Ansi-style
@@ -27,9 +27,38 @@ using namespace std;
 
 
 int main(){
-	srand(time(nullptr));
+//
+	/*srand(time(nullptr));
 
-    return 0;
+	TASK3::demoTask3();
+*/
+
+    float x, y;
+    int erg;
+
+    x = 1;
+    y = 6;
+
+    string input;
+    input = string("COORD[") + to_string(x) + string(",") + to_string(y)+ string("]");
+    std::cout << "INPUT-String= \"" << input << "\"\n";
+
+
+
+
+    erg = sscanf(input.c_str(),"COORD[%f,%f",&x,&y);
+
+
+
+        if(erg == 2){
+            printf("Eingelesen: x = %.3f und y = %.3f\n",x,y);
+        }else{
+            printf("Fehler\n");
+        }
+
+
+
+   	 return 0;
 }
 
 
