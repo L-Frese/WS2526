@@ -23,9 +23,11 @@
 
 class MyServer : public  TCPserver{
 public:
-    MyServer(int port, int bufferSize) : TCPserver(port, bufferSize){};
+    MyServer(int port, int bufferSize) : TCPserver(port, bufferSize){w = new TASK3::World();};
 protected:
     string myResponse(string input);
+private:
+    TASK3::World* w = nullptr;
 };
 
 
@@ -36,33 +38,37 @@ int main(){
 }
 
 string MyServer::myResponse(string input){
-    int x,y;
-    int e;
-    e = sscanf(input.c_str(),"COORD[%d,%d]",&x,&y);
-    if(e != 2){
-        return string("ERROR");
-    }else{
-        return(to_string(x+y));
-    }
 
-
-/*
     if(input.compare(0,4,"INIT") == 0){
         //initialize a new game
-
-        return string("OKAY");
+        delete w;
+        w = new TASK3::World();
+        return string("INITIALIZED");
     }
 
     if(input.compare(0,6,"COORD[") == 0){
         //verarbeite Koordinaten
 
-        TASK3::ShootResult res;
-        res = TASK3::WATER;
+        int x,y;
+        int e;
+        e = sscanf(input.c_str(),"COORD[%i,%i]",&x,&y);
+
+        TASK3::ShootResult res = w->shoot(x,y);
 
         string msg = to_string(res);
         return msg;
     }
 
-*/
+    if(input.compare(0,5,"PRINT") == 0){
+        //verarbeite Koordinaten
+
+        w->printBoard();
+        return "PRINTED";
+    }
+
+
     return(string("UNKNOWN COMMAND"));
-}
+    }
+
+
+
