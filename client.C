@@ -14,7 +14,7 @@
 using namespace std;
 
 void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[10][10]);   //Setzt alle VAriablen auf Startwerte, initialisiert bei Server ein neues Spielfeld
-string shoot(TCPclient *c ,int x, int y, int &n);                       //Shießen auf die Koordinaten
+string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf die Koordinaten
 void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
@@ -28,11 +28,11 @@ int main() {
 	string host = "localhost";
 
     string command;             //Speichert die Eingabe des Nutzers
-    int iterations = 10;         //Anzahl, wie oft das Spiel wiederholt werden soll
+    int iterations = 20;         //Anzahl, wie oft das Spiel wiederholt werden soll
 	string msg;                 //Status/Rückgabewert des letzden Feldes
 	int n;                      //Anzahl an Schüssen
     int x, y;                   //Koordinaten
-    int modeNmb = 1;
+    int modeNmb = 4;
 
     int fieldState[10][10];     //Speichert ggf., ob ein Feld bereits getroffen wurde
 
@@ -90,10 +90,11 @@ int main() {
                         case 3:
                             mode3(x,y,fieldState);
                             msg = shoot(&c,x,y,n);
-                            fieldState[x][y] = msgToInt(msg);
+                            fieldState[x-1][y-1] = msgToInt(msg);
                             break;
                         case 4:
                             msg = shoot(&c,x,y,n);
+                            fieldState[x-1][y-1] = msgToInt(msg);
                             mode4(x,y,fieldState);
                             break;
                         default:
@@ -121,9 +122,9 @@ void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[10][
     n = 0;
     msg = "0";
 
-    for(int j = 1; j <= 10; j++){
-        for(int k = 1; k <= 10; k++){
-            fieldState[j][k] = 0;
+    for(int j = 0; j < 10; j++){
+        for(int k = 0; k < 10; k++){
+            fieldState[j][k] = -1;              //-1 für unbekannt/noch nicht beschossen
         }
     }
 
@@ -177,13 +178,13 @@ void mode3(int &x,int &y, int fieldState[10][10]){
     do{
         x = rand()%10 +1;
         y = rand()%10 +1;
-    }while(fieldState[x][y] != 0);
+    }while(fieldState[x-1][y-1] != -1);
 
     return;
 }
 
 void mode4(int &x,int &y, int fieldState[10][10]){
 
-
     return;
 }
+
