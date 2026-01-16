@@ -18,9 +18,15 @@ string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf 
 void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
-void mode4(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
+void mode4(int &x,int &y, int &nextX, int &nextY, int fieldState[10][10]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
-
+int nextX = 1;
+int nextY = 1;
+int rowX = 1;
+int rowY = 1;
+int lastHitX = 1;
+int lastHitY = 1;
+int lastResult = 0;
 
 int main() {
 	srand(time(NULL));
@@ -42,12 +48,12 @@ int main() {
 
     while(1){
 
-        std::cout << ("Command:");
+        std::cout << ("Enter command:");
         std::cin >> command;
 
         if(command == "ITERATION"){
             int temp;
-            std::cout << ("Enter Number of iterrations:");
+            std::cout << ("Enter Number of iterations:");
             std::cin >> temp;
 
             if(iterations >= 0){
@@ -75,6 +81,10 @@ int main() {
         if(command == "START"){
             for(int i = 0; i < iterations; i++){
                 init(&c,x,y,n,msg,fieldState);
+                nextX = 1;
+                nextY = 1;
+                rowX = 1;
+                rowY = 1;
 
                 while(msg == "0" || msg == "1" || msg == "2"){
 
@@ -95,7 +105,15 @@ int main() {
                         case 4:
                             msg = shoot(&c,x,y,n);
                             fieldState[x-1][y-1] = msgToInt(msg);
-                            mode4(x,y,fieldState);
+
+                            if(fieldState[x-1][y-1] == 1){
+                                mode4(x,y,nextX,nextY,fieldState);
+
+
+                            }else{
+                                mode3(x,y,fieldState);
+                            }
+
                             break;
                         default:
                             std::cout << "ERROR: Invalid mode-number selected" << std::endl;
@@ -104,6 +122,7 @@ int main() {
                 }
 
                 std::cout << "Number of shots:" << n << std::endl;
+
             }
         }
 
@@ -183,7 +202,29 @@ void mode3(int &x,int &y, int fieldState[10][10]){
     return;
 }
 
-void mode4(int &x,int &y, int fieldState[10][10]){
+void mode4(int &x,int &y, int &nextX, int &nextY, int fieldState[10][10]){
+
+    if(fieldState[x][y-1] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+        x++;
+        return;
+    }
+
+    if(fieldState[x-2][y-1] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+        x--;
+        return;
+    }
+
+    if(fieldState[x-1][y] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+        y++;
+        return;
+    }
+
+    if(fieldState[x-1][y-2] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+        y--;
+        return;
+    }
+
+    mode3(x,y,fieldState);
 
     return;
 }
