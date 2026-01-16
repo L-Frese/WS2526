@@ -18,7 +18,7 @@ string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf 
 void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
-void mode4(int &x,int &y, int &nextX, int &nextY, int fieldState[10][10]);              //Berechnng der Koordinaten
+void mode4(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 int nextX = 1;
 int nextY = 1;
@@ -103,16 +103,16 @@ int main() {
                             fieldState[x-1][y-1] = msgToInt(msg);
                             break;
                         case 4:
-                            msg = shoot(&c,x,y,n);
-                            fieldState[x-1][y-1] = msgToInt(msg);
+
 
                             if(fieldState[x-1][y-1] == 1){
-                                mode4(x,y,nextX,nextY,fieldState);
-
-
+                                mode4(x,y,fieldState);
                             }else{
                                 mode3(x,y,fieldState);
                             }
+
+                            msg = shoot(&c,x,y,n);
+                            fieldState[x-1][y-1] = msgToInt(msg);
 
                             break;
                         default:
@@ -190,6 +190,7 @@ void mode1(int &x,int &y){
 void mode2(int &x,int &y){
     x = rand()%10 +1;
     y = rand()%10 +1;
+
     return;
 }
 
@@ -202,25 +203,19 @@ void mode3(int &x,int &y, int fieldState[10][10]){
     return;
 }
 
-void mode4(int &x,int &y, int &nextX, int &nextY, int fieldState[10][10]){
+void mode4(int &x,int &y, int fieldState[10][10]){
 
-    if(fieldState[x][y-1] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+    if(x < 10 && fieldState[x][y-1] == -1){
         x++;
         return;
-    }
-
-    if(fieldState[x-2][y-1] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+    }else if(x > 1 && fieldState[x-2][y-1] == -1){
         x--;
         return;
-    }
-
-    if(fieldState[x-1][y] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
-        y++;
-        return;
-    }
-
-    if(fieldState[x-1][y-2] == -1 && x > 0 && x < 11 && y > 0 && y < 11){
+    }else if(y > 1 && fieldState[x-1][y-2] == -1){
         y--;
+        return;
+    }else if(y < 10 && fieldState[x-1][y] == -1){
+        y++;
         return;
     }
 
