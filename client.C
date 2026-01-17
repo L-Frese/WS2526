@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <unistd.h> //contains various constants
+#include <fstream>
 
 #include "SIMPLESOCKET.H"
 
@@ -20,13 +21,8 @@ void mode2(int &x,int &y);                                      //Berechnng der 
 void mode3(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
-int nextX = 1;
-int nextY = 1;
-int rowX = 1;
-int rowY = 1;
-int lastHitX = 1;
-int lastHitY = 1;
-int lastResult = 0;
+
+
 
 int main() {
 	srand(time(NULL));
@@ -34,19 +30,21 @@ int main() {
 	string host = "localhost";
 
     string command;             //Speichert die Eingabe des Nutzers
-    int iterations = 20;         //Anzahl, wie oft das Spiel wiederholt werden soll
+    int iterations = 100;         //Anzahl, wie oft das Spiel wiederholt werden soll
 	string msg;                 //Status/Rückgabewert des letzden Feldes
 	int n;                      //Anzahl an Schüssen
     int x, y;                   //Koordinaten
     int modeNmb = 4;
-
+    int saveInFile = 1;
     int fieldState[10][10];     //Speichert ggf., ob ein Feld bereits getroffen wurde
 
     init(&c,x,y,n,msg,fieldState);
 
+
 	c.conn(host , 2022);    //connect to host
 
     while(1){
+        std::ofstream file("DataFile");
 
         std::cout << ("Enter command:");
         std::cin >> command;
@@ -81,10 +79,7 @@ int main() {
         if(command == "START"){
             for(int i = 0; i < iterations; i++){
                 init(&c,x,y,n,msg,fieldState);
-                nextX = 1;
-                nextY = 1;
-                rowX = 1;
-                rowY = 1;
+
 
                 while(msg == "0" || msg == "1" || msg == "2"){
 
@@ -122,14 +117,29 @@ int main() {
                 }
 
                 std::cout << "Number of shots:" << n << std::endl;
-
+                if(saveInFile == 1){
+                    std::cout << "HIER";
+                    file << to_string(n) << std::endl;
+                }
             }
+        }
+
+        if(command == "TOFILE"){
+            int saveInFile = 1;
+            std::cout << "Data will be saved in file" << std::endl;
+        }
+
+        if(command == "CLOSEFILE"){
+            int saveInFile = 0;
+            std::cout << "Data won't be saved in file" << std::endl;
         }
 
         if(command == "END"){
             c.sendData("BYEBYE");
             break;
         }
+
+        file.close();
     }
 
     return 0;
@@ -205,6 +215,7 @@ void mode3(int &x,int &y, int fieldState[10][10]){
 
 void mode4(int &x,int &y, int fieldState[10][10]){
 
+    //Muss noch erweitert werden
     if(x < 10 && fieldState[x][y-1] == -1){
         x++;
         return;
