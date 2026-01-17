@@ -107,15 +107,13 @@ int main() {
                             msg = shoot(&c,x,y,n);
                             fieldState[x-1][y-1] = msgToInt(msg);
 
-                            if(fieldState[x-1][y-1] == 1){
+                            if(fieldState[x-1][y-1] == 1 && search == 0){
                                 lastHitX = x;
                                 lastHitY = y;
                                 search = 1;
                             }
 
                             if(fieldState[x-1][y-1] == 2){
-                                lastHitX = 0;
-                                lastHitY = 0;
                                 search = 0;
                             }
 
@@ -174,6 +172,8 @@ void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[10][
 string shoot(TCPclient *c, int x, int y, int &n){
     c->sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));
     string msg = c->receive(5);
+    c->sendData(string("PRINT"));
+    c->receive(10);
     n++;
     return msg;
 }
@@ -217,6 +217,7 @@ void mode3(int &x,int &y, int fieldState[10][10]){
     do{
         x = rand()%10 +1;
         y = rand()%10 +1;
+        std::cout << "HIER";
     }while(fieldState[x-1][y-1] != -1);
 
     return;
@@ -226,24 +227,27 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 
     //Muss noch erweitert werden
     if(search == 1){
-        if(lastHitX < 10 && fieldState[lastHitX][lastHitY-1] == -1){
-            x = lastHitX +1;
-            y = lastHitY;
-            return;
-        }else if(lastHitX > 1 && fieldState[lastHitX-2][lastHitY-1] == -1){
+        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX-2][lastHitY-1] == -1){
             x = lastHitX -1;
             y = lastHitY;
             return;
-        }else if(lastHitY > 1 && fieldState[lastHitX-1][lastHitY-2] == -1){
-            x = lastHitX;
-            y = lastHitY -1;
+        }
+        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX][lastHitY-1] == -1){
+            x = lastHitX +1;
+            y = lastHitY;
             return;
-        }else if(lastHitY < 10 && fieldState[lastHitX-1][lastHitY] == -1){
+        }
+        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX-1][lastHitY] == -1){
             x = lastHitX;
             y = lastHitY +1;
             return;
         }
-
+        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX-1][lastHitY-2] == -1){
+            x = lastHitX;
+            y = lastHitY -1;
+            return;
+        }
+        mode3(x,y,fieldState);
         search = 0;
     }else{
         mode3(x,y,fieldState);
