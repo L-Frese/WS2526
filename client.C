@@ -19,7 +19,7 @@ string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf 
 void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
-void mode4(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
+void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[10][10]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -37,24 +37,27 @@ int main() {
     int modeNmb = 4;
     int saveInFile = 1;
     int fieldState[10][10];     //Speichert ggf., ob ein Feld bereits getroffen wurde
+    int lastHitX = 0;
+    int lastHitY = 0;
+    int search = 0;
 
     init(&c,x,y,n,msg,fieldState);
-
+    std::ofstream file("DataFile");
 
 	c.conn(host , 2022);    //connect to host
 
     while(1){
-        std::ofstream file("DataFile");
 
-        std::cout << ("Enter command:");
+
+        std::cout << ("Enter command:");                        //Nutzereingabe
         std::cin >> command;
 
-        if(command == "ITERATION"){
+        if(command == "ITERATION"){                             //Abfrage, wie oft eine Strategie ausgeführt werden soll
             int temp;
             std::cout << ("Enter Number of iterations:");
             std::cin >> temp;
 
-            if(iterations >= 0){
+            if(iterations >= 0){                                //Überprüfen, ob die Eingabe gültig ist
                 iterations = temp;
                 std::cout << "Number of iterations was set to " << iterations << std::endl;
             }else{
@@ -79,7 +82,9 @@ int main() {
         if(command == "START"){
             for(int i = 0; i < iterations; i++){
                 init(&c,x,y,n,msg,fieldState);
-
+                lastHitX = 0;
+                lastHitY = 0;
+                search = 0;
 
                 while(msg == "0" || msg == "1" || msg == "2"){
 
@@ -98,16 +103,21 @@ int main() {
                             fieldState[x-1][y-1] = msgToInt(msg);
                             break;
                         case 4:
-
-
-                            if(fieldState[x-1][y-1] == 1){
-                                mode4(x,y,fieldState);
-                            }else{
-                                mode3(x,y,fieldState);
-                            }
-
+                            mode4(x,y,lastHitX,lastHitY,search,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x-1][y-1] = msgToInt(msg);
+
+                            if(fieldState[x-1][y-1] == 1){
+                                lastHitX = x;
+                                lastHitY = y;
+                                search = 1;
+                            }
+
+                            if(fieldState[x-1][y-1] == 2){
+                                lastHitX = 0;
+                                lastHitY = 0;
+                                search = 0;
+                            }
 
                             break;
                         default:
@@ -118,19 +128,18 @@ int main() {
 
                 std::cout << "Number of shots:" << n << std::endl;
                 if(saveInFile == 1){
-                    std::cout << "HIER";
-                    file << to_string(n) << std::endl;
+                    file << n << std::endl;
                 }
             }
         }
 
         if(command == "TOFILE"){
-            int saveInFile = 1;
+            saveInFile = 1;
             std::cout << "Data will be saved in file" << std::endl;
         }
 
         if(command == "CLOSEFILE"){
-            int saveInFile = 0;
+            saveInFile = 0;
             std::cout << "Data won't be saved in file" << std::endl;
         }
 
@@ -139,7 +148,7 @@ int main() {
             break;
         }
 
-        file.close();
+
     }
 
     return 0;
@@ -213,24 +222,32 @@ void mode3(int &x,int &y, int fieldState[10][10]){
     return;
 }
 
-void mode4(int &x,int &y, int fieldState[10][10]){
+void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[10][10]){
 
     //Muss noch erweitert werden
-    if(x < 10 && fieldState[x][y-1] == -1){
-        x++;
-        return;
-    }else if(x > 1 && fieldState[x-2][y-1] == -1){
-        x--;
-        return;
-    }else if(y > 1 && fieldState[x-1][y-2] == -1){
-        y--;
-        return;
-    }else if(y < 10 && fieldState[x-1][y] == -1){
-        y++;
-        return;
-    }
+    if(search == 1){
+        if(lastHitX < 10 && fieldState[lastHitX][lastHitY-1] == -1){
+            x = lastHitX +1;
+            y = lastHitY;
+            return;
+        }else if(lastHitX > 1 && fieldState[lastHitX-2][lastHitY-1] == -1){
+            x = lastHitX -1;
+            y = lastHitY;
+            return;
+        }else if(lastHitY > 1 && fieldState[lastHitX-1][lastHitY-2] == -1){
+            x = lastHitX;
+            y = lastHitY -1;
+            return;
+        }else if(lastHitY < 10 && fieldState[lastHitX-1][lastHitY] == -1){
+            x = lastHitX;
+            y = lastHitY +1;
+            return;
+        }
 
-    mode3(x,y,fieldState);
+        search = 0;
+    }else{
+        mode3(x,y,fieldState);
+    }
 
     return;
 }
