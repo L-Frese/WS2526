@@ -20,6 +20,7 @@ void mode1(int &x,int &y);                                      //Berechnng der 
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -70,11 +71,11 @@ int main() {
             std::cin >> temp;
             std::cout << std::endl;
 
-            if(temp > 0 && temp < 5){
+            if(temp > 0 && temp < 6){
                 modeNmb = temp;
                 std::cout << "Mode-Number was set to " << modeNmb << std::endl;
             }else{
-                std::cout << "ERROR: Value must be between 1 and 4" << std::endl;;
+                std::cout << "ERROR: Value must be between 1 and 5" << std::endl;;
             }
         }
 
@@ -103,6 +104,22 @@ int main() {
                             break;
                         case 4:
                             mode4(x,y,lastHitX,lastHitY,search,fieldState);
+                            msg = shoot(&c,x,y,n);
+                            fieldState[x][y] = msgToInt(msg);
+
+                            if(fieldState[x][y] == 1){
+                                lastHitX = x;
+                                lastHitY = y;
+                                search = 1;
+                            }
+
+                            if(fieldState[x][y] == 2){
+                                search = 0;
+                            }
+
+                            break;
+                        case 5:
+                            mode5(x,y,lastHitX,lastHitY,search,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
@@ -220,7 +237,6 @@ void mode3(int &x,int &y, int fieldState[11][11]){
 
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]){
 
-    //Muss noch erweitert werden
     if(search == 1){
         if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
             x = lastHitX -1;
@@ -232,12 +248,12 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
             y = lastHitY;
             return;
         }
-        if(lastHitY > 1 && fieldState[lastHitX][lastHitY+1] == -1){
+        if(lastHitY < 10 && fieldState[lastHitX][lastHitY+1] == -1){
             x = lastHitX;
             y = lastHitY +1;
             return;
         }
-        if(lastHitY < 10 && fieldState[lastHitX][lastHitY-1] == -1){
+        if(lastHitY > 1 && fieldState[lastHitX][lastHitY-1] == -1){
             x = lastHitX;
             y = lastHitY -1;
             return;
@@ -250,4 +266,34 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
     return;
 }
 
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]){
 
+    //Muss noch erweitert werden
+    if(search == 1){
+        if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
+            x = lastHitX -1;
+            y = lastHitY;
+            return;
+        }
+        if(lastHitX < 10 && fieldState[lastHitX+1][lastHitY] == -1){
+            x = lastHitX +1;
+            y = lastHitY;
+            return;
+        }
+        if(lastHitY < 10 && fieldState[lastHitX][lastHitY+1] == -1){
+            x = lastHitX;
+            y = lastHitY +1;
+            return;
+        }
+        if(lastHitY > 1 && fieldState[lastHitX][lastHitY-1] == -1){
+            x = lastHitX;
+            y = lastHitY -1;
+            return;
+        }
+
+        search = 0;
+    }
+    mode3(x,y,fieldState);
+
+    return;
+}
