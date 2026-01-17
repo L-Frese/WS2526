@@ -14,14 +14,13 @@
 
 using namespace std;
 
-void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[10][10]);   //Setzt alle VAriablen auf Startwerte, initialisiert bei Server ein neues Spielfeld
+void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[11][11]);   //Setzt alle VAriablen auf Startwerte, initialisiert bei Server ein neues Spielfeld
 string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf die Koordinaten
 void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
-void mode3(int &x,int &y, int fieldState[10][10]);              //Berechnng der Koordinaten
-void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[10][10]);              //Berechnng der Koordinaten
+void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
+void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
-
 
 
 int main() {
@@ -36,7 +35,7 @@ int main() {
     int x, y;                   //Koordinaten
     int modeNmb = 4;
     int saveInFile = 1;
-    int fieldState[10][10];     //Speichert ggf., ob ein Feld bereits getroffen wurde
+    int fieldState[11][11];     //Speichert ggf., ob ein Feld bereits getroffen wurde
     int lastHitX = 0;
     int lastHitY = 0;
     int search = 0;
@@ -100,20 +99,20 @@ int main() {
                         case 3:
                             mode3(x,y,fieldState);
                             msg = shoot(&c,x,y,n);
-                            fieldState[x-1][y-1] = msgToInt(msg);
+                            fieldState[x][y] = msgToInt(msg);
                             break;
                         case 4:
                             mode4(x,y,lastHitX,lastHitY,search,fieldState);
                             msg = shoot(&c,x,y,n);
-                            fieldState[x-1][y-1] = msgToInt(msg);
+                            fieldState[x][y] = msgToInt(msg);
 
-                            if(fieldState[x-1][y-1] == 1 && search == 0){
+                            if(fieldState[x][y] == 1){
                                 lastHitX = x;
                                 lastHitY = y;
                                 search = 1;
                             }
 
-                            if(fieldState[x-1][y-1] == 2){
+                            if(fieldState[x][y] == 2){
                                 search = 0;
                             }
 
@@ -152,14 +151,14 @@ int main() {
     return 0;
 }
 
-void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[10][10]){
+void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[11][11]){
     x = 1;
     y = 1;
     n = 0;
     msg = "0";
 
-    for(int j = 0; j < 10; j++){
-        for(int k = 0; k < 10; k++){
+    for(int j = 0; j < 11; j++){
+        for(int k = 0; k < 11; k++){
             fieldState[j][k] = -1;              //-1 für unbekannt/noch nicht beschossen
         }
     }
@@ -172,8 +171,6 @@ void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[10][
 string shoot(TCPclient *c, int x, int y, int &n){
     c->sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));
     string msg = c->receive(5);
-    c->sendData(string("PRINT"));
-    c->receive(10);
     n++;
     return msg;
 }
@@ -209,50 +206,48 @@ void mode1(int &x,int &y){
 void mode2(int &x,int &y){
     x = rand()%10 +1;
     y = rand()%10 +1;
-
     return;
 }
 
-void mode3(int &x,int &y, int fieldState[10][10]){
+void mode3(int &x,int &y, int fieldState[11][11]){
     do{
         x = rand()%10 +1;
         y = rand()%10 +1;
-        std::cout << "HIER";
-    }while(fieldState[x-1][y-1] != -1);
+    }while(fieldState[x][y] != -1);
 
     return;
 }
 
-void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[10][10]){
+void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]){
 
     //Muss noch erweitert werden
     if(search == 1){
-        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX-2][lastHitY-1] == -1){
+        if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
             x = lastHitX -1;
             y = lastHitY;
             return;
         }
-        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX][lastHitY-1] == -1){
+        if(lastHitX < 10 && fieldState[lastHitX+1][lastHitY] == -1){
             x = lastHitX +1;
             y = lastHitY;
             return;
         }
-        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX-1][lastHitY] == -1){
+        if(lastHitY > 1 && fieldState[lastHitX][lastHitY+1] == -1){
             x = lastHitX;
             y = lastHitY +1;
             return;
         }
-        if(x >= 1 && x <= 10 && y >= 1 && y <= 10 && fieldState[lastHitX-1][lastHitY-2] == -1){
+        if(lastHitY < 10 && fieldState[lastHitX][lastHitY-1] == -1){
             x = lastHitX;
             y = lastHitY -1;
             return;
         }
-        mode3(x,y,fieldState);
+
         search = 0;
-    }else{
-        mode3(x,y,fieldState);
     }
+    mode3(x,y,fieldState);
 
     return;
 }
+
 
