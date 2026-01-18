@@ -305,10 +305,12 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             }
 
             direction = direction * -1;
-            do{
+            nextX = lastHitX + 2* direction;
 
+            while(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] != -1){
                 nextX = nextX + direction;
-            }while(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] != -1);
+            }
+
 
             if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
                 x = nextX;
@@ -328,11 +330,11 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             }
 
             direction = direction * -1;
+            nextY = lastHitY + 2 * direction;
 
-            do{
+            while(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] != -1){
                 nextY = nextY + direction;
-            }while(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] != -1);
-
+            }
 
             if(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
                 x = lastHitX;
