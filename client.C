@@ -290,8 +290,6 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]){
 
-
-
     if(search == 1){
         if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
             x = lastHitX -1;
@@ -317,29 +315,34 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
         search = 0;
     }
 
-    if(search = 2){
-        if(orientation = 1){
+    if(search == 2){
+        if(orientation == 1){
             if(x < 10 && fieldState[lastHitX+1][lastHitY] == -1){
-                x++;
+                x = lastHitX +1;
+                y = lastHitY;
                 return;
             }
             if(x > 1 && fieldState[lastHitX-1][lastHitY] == -1){
-                x--;
+                x = lastHitX -1;
+                y = lastHitY;
                 return;
             }
         }
-        if(orientation = -1){
+        if(orientation == -1){
             if(y < 10 && fieldState[lastHitX][lastHitY+1] == -1){
-                y++;
+                x = lastHitX;
+                y = lastHitY +1;
                 return;
             }
             if(y > 1 && fieldState[lastHitX][lastHitY-1] == -1){
-                y--;
+                x = lastHitX;
+                y = lastHitY -1;
                 return;
             }
         }
 
         search = 0;
+        orientation = 0;
     }
 
     mode3(x,y,fieldState);
