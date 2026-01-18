@@ -21,7 +21,7 @@ void mode2(int &x,int &y);                                      //Berechnng der 
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY,
-            int &search, int &orientation, int &dircection,
+            int &search, int &orientation,
             int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
@@ -43,7 +43,6 @@ int main() {
     int lastHitY = 0;
     int search = 0;             //Suchmodus 0:Zufall 1:Erster Treffer, orientierung unbekannt, 2:Orientierung bekannt
     int orientation = 0;
-    int direction = 1;
     int firstHitX = 0;
     int firstHitY = 0;
 
@@ -94,7 +93,6 @@ int main() {
                 lastHitY = 0;
                 search = 0;
                 orientation = 0;
-                direction = 1;
                 firstHitX = 0;
                 firstHitY = 0;
 
@@ -135,38 +133,33 @@ int main() {
 
                             break;
                         case 5:
-                            mode5(x,y,lastHitX,lastHitY,search,orientation,direction,fieldState);
+                            mode5(x,y,lastHitX,lastHitY,search,orientation,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
-
-                            if(fieldState[x][y] == 1){
-
-                                if(search == 0){            //erster Treffer, suche starten
-                                    lastHitX = x;
-                                    lastHitY = y;
-                                    firstHitX = x;
-                                    firstHitY = y;
-                                    search = 1;
-                                }else if(search == 1){      //wenn suche bereits gestartet, orientierung setzen
-                                    if(firstHitX == x){
-                                        orientation = 1;
-                                    }else if(firstHitY == y){
-                                        orientation = -1;
-
-                                    }
-
-                                    lastHitX = x;
-                                    lastHitY = y;
-                                    search = 2;
-                                }
-                            }
-
-                            if(fieldState[x][y] == 2){      //Wenn schiff versenkt
+                            if(fieldState[x][y] == 2){
                                 search = 0;
                                 orientation = 0;
-                                direction = 1;
-                                std::cout << "4";
+                            }
+
+                            if(fieldState[x][y] == 1 && search == 1){
+                                lastHitX = x;
+                                lastHitY = y;
+                                if(lastHitX = firstHitX){
+                                    orientation = 1;
+                                }
+                                if(lastHitY = firstHitY){
+                                    orientation = -1;
+                                }
+                                search = 2;
+                            }
+
+                            if(fieldState[x][y] == 1 && search == 0){
+                                lastHitX = x;
+                                firstHitX = x;
+                                lastHitY = y;
+                                firstHitY = y;
+                                search = 1;
                             }
 
                             break;
@@ -300,7 +293,41 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
     return;
 }
 
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int &direction, int fieldState[11][11]){
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]){
+
+    //int direction = 1;
+    int nX = lastHitX;
+    int nY = lastHitY;
+    if(search == 2){
+        if(orientation == 1){
+            nX++;
+            if(nX > 10 || fieldState[nX][nY] != -1){
+                do{
+                    nX--;
+                }while(nX > 1 && fieldState[nX][nY] != -1);
+            }
+            x = nX;
+            y = nY;
+            return;
+        }
+
+        if(orientation == -1){
+            nY++;
+            if(nY > 10 || fieldState[nX][nY] != -1){
+                do{
+                    nY--;
+                }while(nY > 1 && fieldState[nX][nY] != -1);
+            }
+            x = nX;
+            y = nY;
+            return;
+        }
+        search = 0;
+        orientation = 0;
+    }
+
+
+    /*
     if(search == 2){
         if(orientation == 1){
             int nextX = lastHitX + direction;
@@ -324,6 +351,8 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
                 y = lastHitY;
                 return;
             }
+
+
 
         }
 
@@ -355,7 +384,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
         direction = 1;
 
     }
-
+*/
     mode4(x,y,lastHitX,lastHitY,search,fieldState);
 
     return;
