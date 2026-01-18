@@ -138,32 +138,23 @@ int main() {
                             if(fieldState[x][y] == 1){
                                 lastHitX = x;
                                 lastHitY = y;
-                            }
 
-                            if(fieldState[x][y] == 1 && search == 0){
-                                lastHitX = x;
-                                lastHitY = y;
-                                search = 1;
-                            }
-
-                            if(fieldState[x][y] == 1 && search == 1){
-
-                                if(x == lastHitX){
-                                    orientation = 1;    //wagerecht
+                                if(search == 0){            //erster Treffer, suche starten
+                                    search = 1;
+                                }else if(search == 1){      //wenn suche bereits gestartet, orientierung setzen
+                                    if(x == lastHitX){
+                                        orientation = 1;
+                                    }
+                                    if(y == lastHitY){
+                                        orientation = -1;
+                                    }
                                 }
-
-                                if(y == lastHitY){
-                                    orientation = -1;    //senkrecht
-                                }
-
-                                lastHitX = x;
-                                lastHitY = y;
-                                search = 2;
                             }
 
-                            if(fieldState[x][y] == 2){
+                            if(fieldState[x][y] == 2){      //Wenn schiff versenkt
                                 search = 0;
                                 orientation = 0;
+                                direction = 1;
                             }
 
                             break;
@@ -297,31 +288,6 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int &direction, int fieldState[11][11]){
 
-    if(search == 1){
-        if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
-            x = lastHitX -1;
-            y = lastHitY;
-            return;
-        }
-        if(lastHitX < 10 && fieldState[lastHitX+1][lastHitY] == -1){
-            x = lastHitX +1;
-            y = lastHitY;
-            return;
-        }
-        if(lastHitY < 10 && fieldState[lastHitX][lastHitY+1] == -1){
-            x = lastHitX;
-            y = lastHitY +1;
-            return;
-        }
-        if(lastHitY > 1 && fieldState[lastHitX][lastHitY-1] == -1){
-            x = lastHitX;
-            y = lastHitY -1;
-            return;
-        }
-
-        search = 0;
-    }
-
     if(search == 2){
         if(orientation == 1){
             int nextX = lastHitX + direction;
@@ -333,7 +299,9 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             }
 
             direction = direction * -1;
-            nextX = lastHitX + direction;
+            do{
+                nextX = lastHitX + direction;
+            }while(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] != -1);
 
             if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
                 x = nextX;
@@ -353,7 +321,11 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             }
 
             direction = direction * -1;
-            nextY = lastHitY + direction;
+
+            do{
+                nextY = lastHitY + direction;
+            }while(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] != -1);
+
 
             if(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
                 x = lastHitX;
@@ -367,7 +339,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
         direction = 1;
     }
 
-    mode3(x,y,fieldState);
+    mode4(x,y,lastHitX,lastHitY,search,fieldState);
 
     return;
 }
