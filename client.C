@@ -20,7 +20,9 @@ void mode1(int &x,int &y);                                      //Berechnng der 
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]);              //Berechnng der Koordinaten
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY,
+            int &search, int &orientation, int &dircection,
+            int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -40,9 +42,8 @@ int main() {
     int lastHitX = 0;
     int lastHitY = 0;
     int search = 0;             //Suchmodus 0:Zufall 1:Erster Treffer, orientierung unbekannt, 2:Orientierung bekannt
-    int firstHitX = 0;
-    int firstHitY = 0;
     int orientation = 0;
+    int direction = 1;
 
     init(&c,fieldState);
     std::ofstream file("DataFile");
@@ -91,6 +92,7 @@ int main() {
                 lastHitY = 0;
                 search = 0;
                 orientation = 0;
+                direction = 1;
 
                 if(saveInFile == 1){
                     file << "Mode:" << modeNmb << std::endl;
@@ -129,7 +131,7 @@ int main() {
 
                             break;
                         case 5:
-                            mode5(x,y,lastHitX,lastHitY,search,orientation,fieldState);
+                            mode5(x,y,lastHitX,lastHitY,search,orientation,direction,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
@@ -288,7 +290,7 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
     return;
 }
 
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]){
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int &direction, int fieldState[11][11]){
 
     if(search == 1){
         if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
@@ -317,32 +319,34 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
 
     if(search == 2){
         if(orientation == 1){
-            if(x < 10 && fieldState[lastHitX+1][lastHitY] == -1){
-                x = lastHitX +1;
+            int nextX = lastHitX + direction;
+
+            if(nextX >= 0 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
+                x = nextX;
                 y = lastHitY;
                 return;
             }
-            if(x > 1 && fieldState[lastHitX-1][lastHitY] == -1){
-                x = lastHitX -1;
-                y = lastHitY;
-                return;
-            }
+
+            direction = direction * -1;
+
         }
+
         if(orientation == -1){
-            if(y < 10 && fieldState[lastHitX][lastHitY+1] == -1){
+            int nextY = lastHitY + direction;
+
+            if(nextY >= 0 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
                 x = lastHitX;
-                y = lastHitY +1;
+                y = nextY;
                 return;
             }
-            if(y > 1 && fieldState[lastHitX][lastHitY-1] == -1){
-                x = lastHitX;
-                y = lastHitY -1;
-                return;
-            }
+
+            direction = direction * -1;
+
         }
 
         search = 0;
         orientation = 0;
+        direction = 1;
     }
 
     mode3(x,y,fieldState);
