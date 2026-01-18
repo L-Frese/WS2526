@@ -68,7 +68,7 @@ string MyServer::myResponse(string input){
 
 
     return(string("UNKNOWN COMMAND"));
-    }
+}
 
 
 

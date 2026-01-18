@@ -14,13 +14,13 @@
 
 using namespace std;
 
-void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[11][11]);   //Setzt alle VAriablen auf Startwerte, initialisiert bei Server ein neues Spielfeld
+void init(TCPclient *c, int fieldState[11][11]);   //Setzt alle VAriablen auf Startwerte, initialisiert bei Server ein neues Spielfeld
 string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf die Koordinaten
 void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -34,14 +34,17 @@ int main() {
 	string msg;                 //Status/Rückgabewert des letzden Feldes
 	int n;                      //Anzahl an Schüssen
     int x, y;                   //Koordinaten
-    int modeNmb = 4;
+    int modeNmb = 5;
     int saveInFile = 1;
     int fieldState[11][11];     //Speichert ggf., ob ein Feld bereits getroffen wurde
     int lastHitX = 0;
     int lastHitY = 0;
-    int search = 0;
+    int search = 0;             //Suchmodus 0:Zufall 1:Erster Treffer, orientierung unbekannt, 2:Orientierung bekannt
+    int firstHitX = 0;
+    int firstHitY = 0;
+    int orientation = 0;
 
-    init(&c,x,y,n,msg,fieldState);
+    init(&c,fieldState);
     std::ofstream file("DataFile");
 
 	c.conn(host , 2022);    //connect to host
@@ -63,11 +66,10 @@ int main() {
             }else{
                 std::cout << "ERROR: Value must be higher than 0" << std::endl;
             }
-        }
 
-        if(command == "MODE"){
+        }else if(command == "MODE"){
             int temp;
-            std::cout << ("Enter Mode-Number:");
+            std::cout << ("Enter Mode-Number: ");
             std::cin >> temp;
             std::cout << std::endl;
 
@@ -75,16 +77,24 @@ int main() {
                 modeNmb = temp;
                 std::cout << "Mode-Number was set to " << modeNmb << std::endl;
             }else{
-                std::cout << "ERROR: Value must be between 1 and 5" << std::endl;;
+                std::cout << "ERROR: Value must be between 1 and 5" << std::endl;
             }
-        }
 
-        if(command == "START"){
+        }else if(command == "START"){
             for(int i = 0; i < iterations; i++){
-                init(&c,x,y,n,msg,fieldState);
+                init(&c,fieldState);
+                x = 1;
+                y = 1;
+                n = 0;
+                msg = "0";
                 lastHitX = 0;
                 lastHitY = 0;
                 search = 0;
+                orientation = 0;
+
+                if(saveInFile == 1){
+                    file << "Mode:" << modeNmb << std::endl;
+                }
 
                 while(msg == "0" || msg == "1" || msg == "2"){
 
@@ -119,18 +129,34 @@ int main() {
 
                             break;
                         case 5:
-                            mode5(x,y,lastHitX,lastHitY,search,fieldState);
+                            mode5(x,y,lastHitX,lastHitY,search,orientation,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
-                            if(fieldState[x][y] == 1){
+                            if(fieldState[x][y] == 1 && search == 0){
                                 lastHitX = x;
                                 lastHitY = y;
                                 search = 1;
                             }
 
+                            if(fieldState[x][y] == 1 && search == 1){
+
+                                if(x == lastHitX){
+                                    orientation = 1;    //wagerecht
+                                }
+
+                                if(y == lastHitY){
+                                    orientation = -1;    //senkrecht
+                                }
+
+                                lastHitX = x;
+                                lastHitY = y;
+                                search = 2;
+                            }
+
                             if(fieldState[x][y] == 2){
                                 search = 0;
+                                orientation = 0;
                             }
 
                             break;
@@ -145,21 +171,21 @@ int main() {
                     file << n << std::endl;
                 }
             }
-        }
 
-        if(command == "TOFILE"){
+        }else if(command == "TOFILE"){
             saveInFile = 1;
             std::cout << "Data will be saved in file" << std::endl;
-        }
 
-        if(command == "CLOSEFILE"){
+        }else if(command == "CLOSEFILE"){
             saveInFile = 0;
             std::cout << "Data won't be saved in file" << std::endl;
-        }
 
-        if(command == "END"){
+        }else if(command == "END"){
             c.sendData("BYEBYE");
             break;
+
+        }else {
+            std::cout << "UNKNOWN COMMAND" << std::endl;
         }
 
 
@@ -168,11 +194,7 @@ int main() {
     return 0;
 }
 
-void init(TCPclient *c, int &x, int &y, int &n, string &msg, int fieldState[11][11]){
-    x = 1;
-    y = 1;
-    n = 0;
-    msg = "0";
+void init(TCPclient *c, int fieldState[11][11]){
 
     for(int j = 0; j < 11; j++){
         for(int k = 0; k < 11; k++){
@@ -266,9 +288,10 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
     return;
 }
 
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]){
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]){
 
-    //Muss noch erweitert werden
+
+
     if(search == 1){
         if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
             x = lastHitX -1;
@@ -293,6 +316,32 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 
         search = 0;
     }
+
+    if(search = 2){
+        if(orientation = 1){
+            if(x < 10 && fieldState[lastHitX+1][lastHitY] == -1){
+                x++;
+                return;
+            }
+            if(x > 1 && fieldState[lastHitX-1][lastHitY] == -1){
+                x--;
+                return;
+            }
+        }
+        if(orientation = -1){
+            if(y < 10 && fieldState[lastHitX][lastHitY+1] == -1){
+                y++;
+                return;
+            }
+            if(y > 1 && fieldState[lastHitX][lastHitY-1] == -1){
+                y--;
+                return;
+            }
+        }
+
+        search = 0;
+    }
+
     mode3(x,y,fieldState);
 
     return;
