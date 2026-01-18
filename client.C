@@ -135,11 +135,12 @@ int main() {
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
+
                             if(fieldState[x][y] == 1){
-                                lastHitX = x;
-                                lastHitY = y;
 
                                 if(search == 0){            //erster Treffer, suche starten
+                                    lastHitX = x;
+                                    lastHitY = y;
                                     search = 1;
                                 }else if(search == 1){      //wenn suche bereits gestartet, orientierung setzen
                                     if(x == lastHitX){
@@ -148,6 +149,9 @@ int main() {
                                     if(y == lastHitY){
                                         orientation = -1;
                                     }
+                                    lastHitX = x;
+                                    lastHitY = y;
+                                    search = 2;
                                 }
                             }
 
@@ -208,6 +212,8 @@ void init(TCPclient *c, int fieldState[11][11]){
 string shoot(TCPclient *c, int x, int y, int &n){
     c->sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));
     string msg = c->receive(5);
+    c->sendData(string("PRINT"));
+    c->receive(15);
     n++;
     return msg;
 }
@@ -300,7 +306,8 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
 
             direction = direction * -1;
             do{
-                nextX = lastHitX + direction;
+
+                nextX = nextX + direction;
             }while(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] != -1);
 
             if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
@@ -323,7 +330,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             direction = direction * -1;
 
             do{
-                nextY = lastHitY + direction;
+                nextY = nextY + direction;
             }while(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] != -1);
 
 
@@ -337,6 +344,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
         search = 0;
         orientation = 0;
         direction = 1;
+        std::cout << "1";
     }
 
     mode4(x,y,lastHitX,lastHitY,search,fieldState);
