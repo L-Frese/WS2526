@@ -44,6 +44,8 @@ int main() {
     int search = 0;             //Suchmodus 0:Zufall 1:Erster Treffer, orientierung unbekannt, 2:Orientierung bekannt
     int orientation = 0;
     int direction = 1;
+    int firstHitX = 0;
+    int firstHitY = 0;
 
     init(&c,fieldState);
     std::ofstream file("DataFile");
@@ -93,6 +95,8 @@ int main() {
                 search = 0;
                 orientation = 0;
                 direction = 1;
+                firstHitX = 0;
+                firstHitY = 0;
 
                 if(saveInFile == 1){
                     file << "Mode:" << modeNmb << std::endl;
@@ -141,14 +145,17 @@ int main() {
                                 if(search == 0){            //erster Treffer, suche starten
                                     lastHitX = x;
                                     lastHitY = y;
+                                    firstHitX = x;
+                                    firstHitY = y;
                                     search = 1;
                                 }else if(search == 1){      //wenn suche bereits gestartet, orientierung setzen
-                                    if(x == lastHitX){
+                                    if(firstHitX == x){
                                         orientation = 1;
-                                    }
-                                    if(y == lastHitY){
+                                    }else if(firstHitY == y){
                                         orientation = -1;
+
                                     }
+
                                     lastHitX = x;
                                     lastHitY = y;
                                     search = 2;
@@ -159,6 +166,7 @@ int main() {
                                 search = 0;
                                 orientation = 0;
                                 direction = 1;
+                                std::cout << "4";
                             }
 
                             break;
@@ -293,7 +301,6 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 }
 
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int &direction, int fieldState[11][11]){
-
     if(search == 2){
         if(orientation == 1){
             int nextX = lastHitX + direction;
@@ -305,7 +312,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             }
 
             direction = direction * -1;
-            nextX = lastHitX + 2* direction;
+            nextX = lastHitX + direction;
 
             while(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] != -1){
                 nextX = nextX + direction;
@@ -330,7 +337,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
             }
 
             direction = direction * -1;
-            nextY = lastHitY + 2 * direction;
+            nextY = lastHitY + direction;
 
             while(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] != -1){
                 nextY = nextY + direction;
@@ -346,7 +353,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
         search = 0;
         orientation = 0;
         direction = 1;
-        std::cout << "1";
+
     }
 
     mode4(x,y,lastHitX,lastHitY,search,fieldState);
