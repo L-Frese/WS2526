@@ -135,6 +135,11 @@ int main() {
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
+                            if(fieldState[x][y] == 1){
+                                lastHitX = x;
+                                lastHitY = y;
+                            }
+
                             if(fieldState[x][y] == 1 && search == 0){
                                 lastHitX = x;
                                 lastHitY = y;
@@ -321,27 +326,40 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orient
         if(orientation == 1){
             int nextX = lastHitX + direction;
 
-            if(nextX >= 0 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
+            if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
                 x = nextX;
                 y = lastHitY;
                 return;
             }
 
             direction = direction * -1;
+            nextX = lastHitX + direction;
+
+            if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
+                x = nextX;
+                y = lastHitY;
+                return;
+            }
 
         }
 
         if(orientation == -1){
             int nextY = lastHitY + direction;
 
-            if(nextY >= 0 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
+            if(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
                 x = lastHitX;
                 y = nextY;
                 return;
             }
 
             direction = direction * -1;
+            nextY = lastHitY + direction;
 
+            if(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
+                x = lastHitX;
+                y = nextY;
+                return;
+            }
         }
 
         search = 0;
