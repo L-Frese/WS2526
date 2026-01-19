@@ -20,8 +20,8 @@ void mode1(int &x,int &y);                                      //Berechnng der 
 void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY,
-            int &search, int &orientation, int fieldState[11][11]);              //Berechnng der Koordinaten
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,
+            int &search, int &orientation, int &direction, int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -31,7 +31,7 @@ int main() {
 	string host = "localhost";
 
     string command;             //Speichert die Eingabe des Nutzers
-    int iterations = 100;         //Anzahl, wie oft das Spiel wiederholt werden soll
+    int iterations = 1;         //Anzahl, wie oft das Spiel wiederholt werden soll
 	string msg;                 //Status/Rückgabewert des letzden Feldes
 	int n;                      //Anzahl an Schüssen
     int x, y;                   //Koordinaten
@@ -44,6 +44,7 @@ int main() {
     int orientation = 0;
     int firstHitX = 0;
     int firstHitY = 0;
+    int direction;
 
     init(&c,fieldState);
     std::ofstream file("DataFile");
@@ -92,6 +93,7 @@ int main() {
                 lastHitY = 0;
                 search = 0;
                 orientation = 0;
+                direction = 1;
                 firstHitX = 0;
                 firstHitY = 0;
 
@@ -132,24 +134,22 @@ int main() {
 
                             break;
                         case 5:
-                            mode5(x,y,lastHitX,lastHitY,search,orientation,fieldState);
+                            mode5(x,y,lastHitX,lastHitY,firstHitX,firstHitY,search,orientation,direction,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
                             if(fieldState[x][y] == 2){
                                 search = 0;
                                 orientation = 0;
+                                direction = 1;
+                                firstHitX = 0;
+                                firstHitY = 0;
                             }
 
                             if(fieldState[x][y] == 1 && search == 1){
+
                                 lastHitX = x;
                                 lastHitY = y;
-                                if(lastHitX == firstHitX){
-                                    orientation = 1;
-                                }
-                                if(lastHitY == firstHitY){
-                                    orientation = -1;
-                                }
                                 search = 2;
                             }
 
@@ -292,63 +292,39 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
     return;
 }
 
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]){
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,int &search, int &orientation, int &direction, int fieldState[11][11]){             //Berechnng der Koordinatenint msgToInt(string msg){
 
     if(search == 2){
-        if(orientation == 1){
-            int nextX = lastHitX + 1;
+        if(lastHitX == firstHitX){
+            x = lastHitX;
+            y = lastHitY + direction;
+            if(y >= 1 && y <= 10 && fieldState[x][y] != -1){
+                return;
+            }else{
+                direction = direction * -1;
+                y = y + direction;
 
-            while(nextX <= 10 && fieldState[nextX][lastHitY] == 1){
-                nextX++;
-            }
+                do{
+                    y = y + direction;
+                }while(y >= 1 && y <= 10 && fieldState[x][y] != -1);
 
-
-            if(nextX <= 10 && fieldState[nextX][lastHitY] == -1){
-                x = nextX;
-                y = lastHitY;
                 return;
             }
-
-            nextX = lastHitX -1;
-            while(nextX >= 1 && fieldState[nextX][lastHitY] == 1){
-                nextX--;
-            }
-
-            if(nextX >= 1 && fieldState[nextX][lastHitY] == -1){
-                x = nextX;
-                y = lastHitY;
-                return;
-            }
-
         }
 
-        if(orientation == -1){
-            int nextY = lastHitY + 1;
-
-            while(nextY <= 10 && fieldState[lastHitX][nextY] == 1){
-                nextY++;
-            }
-
-
-            if(nextY <= 10 && fieldState[lastHitX][nextY] == -1){
-                x = lastHitX;
-                y = nextY;
+        if(lastHitY == firstHitY){
+            y = lastHitY;
+            x = lastHitX + direction;
+            if(x >= 1 && x <= 10 && fieldState[x][y] != -1){
+                return;
+            }else{
+                direction = direction * -1;
+                x = x + direction;
+                do{
+                    x = x + direction;
+                }while(x >= 1 && x <= 10 && fieldState[x][y] != -1);
                 return;
             }
-
-            nextY = lastHitY -1;
-            while(nextY >= 1 && fieldState[lastHitX][nextY] == 1){
-                nextY--;
-            }
-
-            if(nextY >= 1 && fieldState[lastHitX][nextY] == -1){
-                x = lastHitX;
-                y = nextY;
-                return;
-            }
-
-            search = 0;
-            orientation = 0;
         }
     }
 
