@@ -21,8 +21,7 @@ void mode2(int &x,int &y);                                      //Berechnng der 
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY,
-            int &search, int &orientation,
-            int fieldState[11][11]);              //Berechnng der Koordinaten
+            int &search, int &orientation, int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -62,7 +61,7 @@ int main() {
             std::cout << ("Enter Number of iterations:");
             std::cin >> temp;
 
-            if(iterations >= 0){                                //Überprüfen, ob die Eingabe gültig ist
+            if(temp >= 0){                                //Überprüfen, ob die Eingabe gültig ist
                 iterations = temp;
                 std::cout << "Number of iterations was set to " << iterations << std::endl;
             }else{
@@ -145,10 +144,10 @@ int main() {
                             if(fieldState[x][y] == 1 && search == 1){
                                 lastHitX = x;
                                 lastHitY = y;
-                                if(lastHitX = firstHitX){
+                                if(lastHitX == firstHitX){
                                     orientation = 1;
                                 }
-                                if(lastHitY = firstHitY){
+                                if(lastHitY == firstHitY){
                                     orientation = -1;
                                 }
                                 search = 2;
@@ -295,96 +294,65 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int &orientation, int fieldState[11][11]){
 
-    //int direction = 1;
-    int nX = lastHitX;
-    int nY = lastHitY;
     if(search == 2){
         if(orientation == 1){
-            nX++;
-            if(nX > 10 || fieldState[nX][nY] != -1){
-                do{
-                    nX--;
-                }while(nX > 1 && fieldState[nX][nY] != -1);
+            int nextX = lastHitX + 1;
+
+            while(nextX <= 10 && fieldState[nextX][lastHitY] == 1){
+                nextX++;
             }
-            x = nX;
-            y = nY;
-            return;
-        }
-
-        if(orientation == -1){
-            nY++;
-            if(nY > 10 || fieldState[nX][nY] != -1){
-                do{
-                    nY--;
-                }while(nY > 1 && fieldState[nX][nY] != -1);
-            }
-            x = nX;
-            y = nY;
-            return;
-        }
-        search = 0;
-        orientation = 0;
-    }
 
 
-    /*
-    if(search == 2){
-        if(orientation == 1){
-            int nextX = lastHitX + direction;
-
-            if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
+            if(nextX <= 10 && fieldState[nextX][lastHitY] == -1){
                 x = nextX;
                 y = lastHitY;
                 return;
             }
 
-            direction = direction * -1;
-            nextX = lastHitX + direction;
-
-            while(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] != -1){
-                nextX = nextX + direction;
+            nextX = lastHitX -1;
+            while(nextX >= 1 && fieldState[nextX][lastHitY] == 1){
+                nextX--;
             }
 
-
-            if(nextX >= 1 && nextX <= 10 && fieldState[nextX][lastHitY] == -1){
+            if(nextX >= 1 && fieldState[nextX][lastHitY] == -1){
                 x = nextX;
                 y = lastHitY;
                 return;
             }
 
-
-
         }
 
         if(orientation == -1){
-            int nextY = lastHitY + direction;
+            int nextY = lastHitY + 1;
 
-            if(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
+            while(nextY <= 10 && fieldState[lastHitX][nextY] == 1){
+                nextY++;
+            }
+
+
+            if(nextY <= 10 && fieldState[lastHitX][nextY] == -1){
                 x = lastHitX;
                 y = nextY;
                 return;
             }
 
-            direction = direction * -1;
-            nextY = lastHitY + direction;
-
-            while(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] != -1){
-                nextY = nextY + direction;
+            nextY = lastHitY -1;
+            while(nextY >= 1 && fieldState[lastHitX][nextY] == 1){
+                nextY--;
             }
 
-            if(nextY >= 1 && nextY <= 10 && fieldState[lastHitX][nextY] == -1){
+            if(nextY >= 1 && fieldState[lastHitX][nextY] == -1){
                 x = lastHitX;
                 y = nextY;
                 return;
             }
+
+            search = 0;
+            orientation = 0;
         }
-
-        search = 0;
-        orientation = 0;
-        direction = 1;
-
     }
-*/
+
+
     mode4(x,y,lastHitX,lastHitY,search,fieldState);
 
     return;
