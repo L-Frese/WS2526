@@ -21,7 +21,7 @@ void mode2(int &x,int &y);                                      //Berechnng der 
 void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
 void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,
-            int &search, int &orientation, int &direction, int fieldState[11][11]);              //Berechnng der Koordinaten
+            int &search, int &end, int &direction, int fieldState[11][11]);              //Berechnng der Koordinaten
 int msgToInt(string msg);
 
 
@@ -45,6 +45,7 @@ int main() {
     int firstHitX = 0;
     int firstHitY = 0;
     int direction;
+    int end = 0;
 
     init(&c,fieldState);
     std::ofstream file("DataFile");
@@ -96,10 +97,7 @@ int main() {
                 direction = 1;
                 firstHitX = 0;
                 firstHitY = 0;
-
-                if(saveInFile == 1){
-                    file << "Mode:" << modeNmb << std::endl;
-                }
+                end = 0;
 
                 while(msg == "0" || msg == "1" || msg == "2"){
 
@@ -134,7 +132,7 @@ int main() {
 
                             break;
                         case 5:
-                            mode5(x,y,lastHitX,lastHitY,firstHitX,firstHitY,search,orientation,direction,fieldState);
+                            mode5(x,y,lastHitX,lastHitY,firstHitX,firstHitY,search,end,direction,fieldState);
                             msg = shoot(&c,x,y,n);
                             fieldState[x][y] = msgToInt(msg);
 
@@ -144,6 +142,7 @@ int main() {
                                 direction = 1;
                                 firstHitX = 0;
                                 firstHitY = 0;
+                                end = 0;
                             }
 
                             if(fieldState[x][y] == 1 && search == 1){
@@ -159,6 +158,11 @@ int main() {
                                 lastHitY = y;
                                 firstHitY = y;
                                 search = 1;
+                            }
+
+                            if(fieldState[x][y] == 1 && search == 2){
+                                lastHitX = x;
+                                lastHitY = y;
                             }
 
                             break;
@@ -177,6 +181,8 @@ int main() {
         }else if(command == "TOFILE"){
             saveInFile = 1;
             std::cout << "Data will be saved in file" << std::endl;
+            file << "Mode:" << modeNmb << std::endl;
+            file << "Iterations:" << iterations << std::endl;
 
         }else if(command == "CLOSEFILE"){
             saveInFile = 0;
@@ -292,39 +298,45 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
     return;
 }
 
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,int &search, int &orientation, int &direction, int fieldState[11][11]){             //Berechnng der Koordinatenint msgToInt(string msg){
+void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,int &search, int &end, int &direction, int fieldState[11][11]){             //Berechnng der Koordinatenint msgToInt(string msg){
 
     if(search == 2){
         if(lastHitX == firstHitX){
             x = lastHitX;
-            y = lastHitY + direction;
-            if(y >= 1 && y <= 10 && fieldState[x][y] != -1){
+            y = lastHitY + 1;
+
+            if(y >= 1 && y <= 10 && fieldState[x][y] == -1 && end == 0){
                 return;
             }else{
-                direction = direction * -1;
-                y = y + direction;
+                end = 1;
+            }
 
-                do{
-                    y = y + direction;
-                }while(y >= 1 && y <= 10 && fieldState[x][y] != -1);
-
+            if(end == 1){
+                while(y >= 1 && y <= 10 && fieldState[x][y] != -1){
+                    y--;
+                }
                 return;
             }
+
         }
 
         if(lastHitY == firstHitY){
             y = lastHitY;
-            x = lastHitX + direction;
-            if(x >= 1 && x <= 10 && fieldState[x][y] != -1){
+            x = lastHitX + 1;
+
+            if(x >= 1 && x <= 10 && fieldState[x][y] == -1 && end == 0){
                 return;
             }else{
-                direction = direction * -1;
-                x = x + direction;
-                do{
-                    x = x + direction;
-                }while(x >= 1 && x <= 10 && fieldState[x][y] != -1);
+                end = 1;
+            }
+
+            if(end == 1){
+                while(x >= 1 && x <= 10 && fieldState[x][y] != -1){
+                    x--;
+                }
                 return;
             }
+
         }
     }
 
