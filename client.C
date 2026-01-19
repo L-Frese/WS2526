@@ -9,45 +9,45 @@
 #include <iostream>
 #include <unistd.h> //contains various constants
 #include <fstream>
-
+#include <ctime>
 #include "SIMPLESOCKET.H"
 
 using namespace std;
 
-void init(TCPclient *c, int fieldState[11][11]);   //Setzt alle VAriablen auf Startwerte, initialisiert bei Server ein neues Spielfeld
-string shoot(TCPclient *c ,int x, int y, int &n);               //Schießen auf die Koordinaten
-void mode1(int &x,int &y);                                      //Berechnng der Koordinaten
-void mode2(int &x,int &y);                                      //Berechnng der Koordinaten
-void mode3(int &x,int &y, int fieldState[11][11]);              //Berechnng der Koordinaten
-void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]);              //Berechnng der Koordinaten
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,
-            int &search, int &end, int &direction, int fieldState[11][11]);              //Berechnng der Koordinaten
-int msgToInt(string msg);
-
+class MyClient : public TCPclient{
+public:
+    void mode1();
+    void mode2();
+    void mode3();
+    void mode4();
+    void mode5();
+    void init();
+    void shoot();
+    int play(int modeSelect);
+protected:
+	string msg = "0";
+	int n = 0;
+    int x = 0;
+    int y = 0;
+    int fieldState[11][11];
+    int lastHitX = 0;
+    int lastHitY = 0;
+    int search = 0;
+    int firstHitX = 0;
+    int firstHitY = 0;
+    int end = 0;
+};
 
 int main() {
 	srand(time(NULL));
-	TCPclient c;
+	MyClient c;
 	string host = "localhost";
+	int iterations = 1;
+    int modeNmb = 1;
+    string command;
+    int saveInFile = 0;
 
-    string command;             //Speichert die Eingabe des Nutzers
-    int iterations = 1;         //Anzahl, wie oft das Spiel wiederholt werden soll
-	string msg;                 //Status/Rückgabewert des letzden Feldes
-	int n;                      //Anzahl an Schüssen
-    int x, y;                   //Koordinaten
-    int modeNmb = 5;
-    int saveInFile = 1;
-    int fieldState[11][11];     //Speichert ggf., ob ein Feld bereits getroffen wurde
-    int lastHitX = 0;
-    int lastHitY = 0;
-    int search = 0;             //Suchmodus 0:Zufall 1:Erster Treffer, orientierung unbekannt, 2:Orientierung bekannt
-    int orientation = 0;
-    int firstHitX = 0;
-    int firstHitY = 0;
-    int direction;
-    int end = 0;
-
-    init(&c,fieldState);
+    c.init();
     std::ofstream file("DataFile");
 
 	c.conn(host , 2022);    //connect to host
@@ -55,145 +55,64 @@ int main() {
     while(1){
 
 
-        std::cout << ("Enter command:");                        //Nutzereingabe
-        std::cin >> command;
+        cout << ("Enter command:");                        //Nutzereingabe
+        cin >> command;
 
         if(command == "ITERATION"){                             //Abfrage, wie oft eine Strategie ausgeführt werden soll
             int temp;
-            std::cout << ("Enter Number of iterations:");
-            std::cin >> temp;
+            cout << ("Enter Number of iterations:");
+            cin >> temp;
 
             if(temp >= 0){                                //Überprüfen, ob die Eingabe gültig ist
                 iterations = temp;
-                std::cout << "Number of iterations was set to " << iterations << std::endl;
+                cout << "Number of iterations was set to " << iterations << endl;
             }else{
-                std::cout << "ERROR: Value must be higher than 0" << std::endl;
+                cout << "ERROR: Value must be higher than 0" << endl;
+                iterations = 1;
             }
 
         }else if(command == "MODE"){
             int temp;
-            std::cout << ("Enter Mode-Number: ");
-            std::cin >> temp;
-            std::cout << std::endl;
+            cout << ("Enter Mode-Number: ");
+            cin >> temp;
+            cout << endl;
 
             if(temp > 0 && temp < 6){
                 modeNmb = temp;
-                std::cout << "Mode-Number was set to " << modeNmb << std::endl;
+                cout << "Mode-Number was set to " << modeNmb << endl;
             }else{
-                std::cout << "ERROR: Value must be between 1 and 5" << std::endl;
+                cout << "ERROR: Value must be between 1 and 5" << endl;
+                modeNmb = 1;
             }
 
         }else if(command == "START"){
+            cout << "starting" << endl;
             for(int i = 0; i < iterations; i++){
-                init(&c,fieldState);
-                x = 1;
-                y = 1;
-                n = 0;
-                msg = "0";
-                lastHitX = 0;
-                lastHitY = 0;
-                search = 0;
-                orientation = 0;
-                direction = 1;
-                firstHitX = 0;
-                firstHitY = 0;
-                end = 0;
+                int n = c.play(modeNmb);
 
-                while(msg == "0" || msg == "1" || msg == "2"){
-
-                    switch(modeNmb){
-                        case 1:
-                            msg = shoot(&c,x,y,n);
-                            mode1(x,y);
-                            break;
-                        case 2:
-                            mode2(x,y);
-                            msg = shoot(&c,x,y,n);
-                            break;
-                        case 3:
-                            mode3(x,y,fieldState);
-                            msg = shoot(&c,x,y,n);
-                            fieldState[x][y] = msgToInt(msg);
-                            break;
-                        case 4:
-                            mode4(x,y,lastHitX,lastHitY,search,fieldState);
-                            msg = shoot(&c,x,y,n);
-                            fieldState[x][y] = msgToInt(msg);
-
-                            if(fieldState[x][y] == 1){
-                                lastHitX = x;
-                                lastHitY = y;
-                                search = 1;
-                            }
-
-                            if(fieldState[x][y] == 2){
-                                search = 0;
-                            }
-
-                            break;
-                        case 5:
-                            mode5(x,y,lastHitX,lastHitY,firstHitX,firstHitY,search,end,direction,fieldState);
-                            msg = shoot(&c,x,y,n);
-                            fieldState[x][y] = msgToInt(msg);
-
-                            if(fieldState[x][y] == 2){
-                                search = 0;
-                                orientation = 0;
-                                direction = 1;
-                                firstHitX = 0;
-                                firstHitY = 0;
-                                end = 0;
-                            }
-
-                            if(fieldState[x][y] == 1 && search == 1){
-
-                                lastHitX = x;
-                                lastHitY = y;
-                                search = 2;
-                            }
-
-                            if(fieldState[x][y] == 1 && search == 0){
-                                lastHitX = x;
-                                firstHitX = x;
-                                lastHitY = y;
-                                firstHitY = y;
-                                search = 1;
-                            }
-
-                            if(fieldState[x][y] == 1 && search == 2){
-                                lastHitX = x;
-                                lastHitY = y;
-                            }
-
-                            break;
-                        default:
-                            std::cout << "ERROR: Invalid mode-number selected" << std::endl;
-                            break;
-                    }
-                }
-
-                std::cout << "Number of shots:" << n << std::endl;
+                cout << "Number of shots:" << n << endl;
                 if(saveInFile == 1){
-                    file << n << std::endl;
+                file << n << endl;
                 }
             }
 
         }else if(command == "TOFILE"){
             saveInFile = 1;
-            std::cout << "Data will be saved in file" << std::endl;
-            file << "Mode:" << modeNmb << std::endl;
-            file << "Iterations:" << iterations << std::endl;
+            cout << "Data will be saved in file" << endl;
+            file << "Mode:" << modeNmb << endl;
+            file << "Iterations:" << iterations << endl;
 
         }else if(command == "CLOSEFILE"){
             saveInFile = 0;
-            std::cout << "Data won't be saved in file" << std::endl;
+            cout << "Data won't be saved in file" << endl;
 
         }else if(command == "END"){
+            cout << "ending" << endl;
             c.sendData("BYEBYE");
             break;
 
         }else {
-            std::cout << "UNKNOWN COMMAND" << std::endl;
+            cout << "UNKNOWN COMMAND" << endl;
         }
 
 
@@ -202,7 +121,7 @@ int main() {
     return 0;
 }
 
-void init(TCPclient *c, int fieldState[11][11]){
+void MyClient::init(){
 
     for(int j = 0; j < 11; j++){
         for(int k = 0; k < 11; k++){
@@ -210,38 +129,119 @@ void init(TCPclient *c, int fieldState[11][11]){
         }
     }
 
-    c->sendData("INIT");
-    c->receive(15);
+    msg = "0";
+	n = 0;
+    x = 1;
+    y = 1;
+    lastHitX = 0;
+    lastHitY = 0;
+    firstHitX = 0;
+    firstHitY = 0;
+    search = 0;
+    end = 0;
+
+    sendData("INIT");
+    receive(15);
     return;
 }
 
-string shoot(TCPclient *c, int x, int y, int &n){
-    c->sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));
-    string msg = c->receive(5);
-    //c->sendData(string("PRINT"));
-    //c->receive(15);
-    n++;
-    return msg;
+int MyClient::play(int modeSelect){
+    init();
+
+    while(msg == "0" || msg == "1" || msg == "2"){
+
+    switch(modeSelect){
+        case 1:
+            shoot();
+            mode1();
+            break;
+        case 2:
+            mode2();
+            shoot();
+            break;
+        case 3:
+            mode3();
+            shoot();
+            break;
+        case 4:
+            mode4();
+            shoot();
+
+            if(fieldState[x][y] == 1){
+                lastHitX = x;
+                lastHitY = y;
+                search = 1;
+            }
+
+            if(fieldState[x][y] == 2){
+                search = 0;
+            }
+
+            break;
+        case 5:
+            mode5();
+            shoot();
+
+            if(fieldState[x][y] == 2){
+                firstHitX = 0;
+                firstHitY = 0;
+                search = 0;
+                end = 0;
+            }
+
+            if(fieldState[x][y] == 1 && search == 1){
+
+                lastHitX = x;
+                lastHitY = y;
+                search = 2;
+            }
+
+            if(fieldState[x][y] == 1 && search == 0){
+                lastHitX = x;
+                firstHitX = x;
+                lastHitY = y;
+                firstHitY = y;
+                search = 1;
+            }
+
+            if(fieldState[x][y] == 1 && search == 2){
+                lastHitX = x;
+                lastHitY = y;
+            }
+
+            break;
+            default:
+                cout << "ERROR: Invalid mode-number selected" << endl;
+                break;
+        }
+    }
+    return n;
 }
 
-int msgToInt(string msg){
+
+void MyClient::shoot(){
+    sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));
+    msg = receive(5);
+
     if(msg == "0"){
-        return 0;
+        fieldState[x][y] = 0;
     }else if(msg == "1"){
-        return 1;
+        fieldState[x][y] = 1;
     }else if(msg == "2"){
-        return 2;
+        fieldState[x][y] = 2;
     }else if(msg == "3"){
-        return 3;
+        fieldState[x][y] = 3;
     }else if(msg == "4"){
-        return 4;
+        fieldState[x][y] = 4;
     }else{
         std::cout << "ERROR: Can't convert to int" << std::endl;
-        return 0;
     }
+
+    n++;
+    return;
 }
 
-void mode1(int &x,int &y){
+void MyClient::mode1(){
     x++;
 
     if(x >= 11){
@@ -252,13 +252,13 @@ void mode1(int &x,int &y){
     return;
 }
 
-void mode2(int &x,int &y){
+void MyClient::mode2(){
     x = rand()%10 +1;
     y = rand()%10 +1;
     return;
 }
 
-void mode3(int &x,int &y, int fieldState[11][11]){
+void MyClient::mode3(){
     do{
         x = rand()%10 +1;
         y = rand()%10 +1;
@@ -267,7 +267,7 @@ void mode3(int &x,int &y, int fieldState[11][11]){
     return;
 }
 
-void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]){
+void MyClient::mode4(){
 
     if(search == 1){
         if(lastHitX < 10 && fieldState[lastHitX+1][lastHitY] == -1){
@@ -295,12 +295,12 @@ void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldSt
 
         search = 0;
     }
-    mode3(x,y,fieldState);
+    mode3();
 
     return;
 }
 
-void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &firstHitY,int &search, int &end, int &direction, int fieldState[11][11]){             //Berechnng der Koordinatenint msgToInt(string msg){
+void MyClient::mode5(){             //Berechnng der Koordinatenint msgToInt(string msg){
 
     if(search == 2){
         if(lastHitX == firstHitX){
@@ -348,7 +348,7 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &fir
     }
 
 
-    mode4(x,y,lastHitX,lastHitY,search,fieldState);
+    mode4();
 
     return;
 }
