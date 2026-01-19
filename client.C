@@ -218,8 +218,8 @@ void init(TCPclient *c, int fieldState[11][11]){
 string shoot(TCPclient *c, int x, int y, int &n){
     c->sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));
     string msg = c->receive(5);
-    c->sendData(string("PRINT"));
-    c->receive(15);
+    //c->sendData(string("PRINT"));
+    //c->receive(15);
     n++;
     return msg;
 }
@@ -270,16 +270,18 @@ void mode3(int &x,int &y, int fieldState[11][11]){
 void mode4(int &x,int &y, int &lastHitX, int &lastHitY, int &search, int fieldState[11][11]){
 
     if(search == 1){
-        if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
-            x = lastHitX -1;
-            y = lastHitY;
-            return;
-        }
         if(lastHitX < 10 && fieldState[lastHitX+1][lastHitY] == -1){
             x = lastHitX +1;
             y = lastHitY;
             return;
         }
+
+        if(lastHitX > 1 && fieldState[lastHitX-1][lastHitY] == -1){
+            x = lastHitX -1;
+            y = lastHitY;
+            return;
+        }
+
         if(lastHitY < 10 && fieldState[lastHitX][lastHitY+1] == -1){
             x = lastHitX;
             y = lastHitY +1;
@@ -302,42 +304,47 @@ void mode5(int &x,int &y, int &lastHitX, int &lastHitY, int &firstHitX, int &fir
 
     if(search == 2){
         if(lastHitX == firstHitX){
-            x = lastHitX;
-            y = lastHitY + 1;
 
-            if(y >= 1 && y <= 10 && fieldState[x][y] == -1 && end == 0){
+            if(y >= 1 && y <= 10 && fieldState[lastHitX][lastHitY +1] == -1 && end == 0){
+                x = lastHitX;
+                y = lastHitY + 1;
                 return;
             }else{
                 end = 1;
             }
 
             if(end == 1){
-                while(y >= 1 && y <= 10 && fieldState[x][y] != -1){
-                    y--;
+                while(lastHitY >= 1 && lastHitY <= 10 && fieldState[lastHitX][lastHitY] != -1){
+                    lastHitY--;
                 }
+                x = lastHitX;
+                y = lastHitY;
                 return;
             }
 
         }
 
         if(lastHitY == firstHitY){
-            y = lastHitY;
-            x = lastHitX + 1;
 
-            if(x >= 1 && x <= 10 && fieldState[x][y] == -1 && end == 0){
+            if(x >= 1 && x <= 10 && fieldState[lastHitX +1][lastHitY] == -1 && end == 0){
+                y = lastHitY;
+                x = lastHitX + 1;
                 return;
             }else{
                 end = 1;
             }
 
             if(end == 1){
-                while(x >= 1 && x <= 10 && fieldState[x][y] != -1){
-                    x--;
+                while(lastHitX >= 1 && lastHitX <= 10 && fieldState[lastHitX][lastHitY] != -1){
+                    lastHitX--;
                 }
+                x = lastHitX;
+                y = lastHitY;
                 return;
             }
 
         }
+    search = 0;
     }
 
 
