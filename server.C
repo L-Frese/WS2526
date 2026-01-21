@@ -42,7 +42,7 @@ string MyServer::myResponse(string input){
     if(input.compare(0,4,"INIT") == 0){     //neues Spiel initialisieren
         delete w;
         w = new TASK3::World();             //Neues Objekt der klasse World erstellen
-        return string("INITIALIZED");
+        return string("INITIALIZED\n");
     }
 
     if(input.compare(0,6,"COORD[") == 0){   //Koordinaten eines Schusses erhalten und verarbeiten
@@ -53,18 +53,18 @@ string MyServer::myResponse(string input){
 
         TASK3::ShootResult res = w->shoot(x,y);         //Schießen auf die Koordinaten, speichern des Ergebnisses
 
-        string msg = to_string(res);                    //Ergebnis in string speichern
+        string msg = to_string(res) + "\n";                    //Ergebnis in string speichern
         return msg;
     }
 
     if(input.compare(0,5,"PRINT") == 0){                //Ausgabe des Spielfeldes
 
         w->printBoard();
-        return "PRINTED";
+        return "PRINTED\n";
     }
 
 
-    return(string("UNKNOWN COMMAND"));                  //Bei unbekannter eingabe
+    return(string("UNKNOWN COMMAND\n"));                  //Bei unbekannter eingabe
 }
 
 
