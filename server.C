@@ -39,35 +39,32 @@ int main(){
 
 string MyServer::myResponse(string input){
 
-    if(input.compare(0,4,"INIT") == 0){
-        //initialize a new game
+    if(input.compare(0,4,"INIT") == 0){     //neues Spiel initialisieren
         delete w;
-        w = new TASK3::World();
+        w = new TASK3::World();             //Neues Objekt der klasse World erstellen
         return string("INITIALIZED");
     }
 
-    if(input.compare(0,6,"COORD[") == 0){
-        //verarbeite Koordinaten
+    if(input.compare(0,6,"COORD[") == 0){   //Koordinaten eines Schusses erhalten und verarbeiten
 
-        int x,y;
-        int e;
-        e = sscanf(input.c_str(),"COORD[%i,%i]",&x,&y);
+        int x,y;            //Variablen für Koordinaten
+        int e;              //Variable für Antwort
+        e = sscanf(input.c_str(),"COORD[%i,%i]",&x,&y); //einlesen der Eingabe
 
-        TASK3::ShootResult res = w->shoot(x,y);
+        TASK3::ShootResult res = w->shoot(x,y);         //Schießen auf die Koordinaten, speichern des Ergebnisses
 
-        string msg = to_string(res);
+        string msg = to_string(res);                    //Ergebnis in string speichern
         return msg;
     }
 
-    if(input.compare(0,5,"PRINT") == 0){
-        //verarbeite Koordinaten
+    if(input.compare(0,5,"PRINT") == 0){                //Ausgabe des Spielfeldes
 
         w->printBoard();
         return "PRINTED";
     }
 
 
-    return(string("UNKNOWN COMMAND"));
+    return(string("UNKNOWN COMMAND"));                  //Bei unbekannter eingabe
 }
 
 
