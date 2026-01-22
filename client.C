@@ -222,7 +222,7 @@ int MyClient::play(int modeSelect){
 
 void MyClient::shoot(){
     sendData(string("COORD[") + to_string(x) + string(",") + to_string(y) + string("]"));   //Erstellen und senden eines strings zum schießen an die koordinaten x und y
-    msg = receive(5);           //erhalten und speichern der Antwort
+    msg = receive(15);           //erhalten und speichern der Antwort
 
     if(msg == "0"){             //Speichern der Antwort im Datenfeld
         fieldState[x][y] = 0;
@@ -235,7 +235,7 @@ void MyClient::shoot(){
     }else if(msg == "4"){
         fieldState[x][y] = 4;
     }else{
-        std::cout << "ERROR: Can't convert to int" << std::endl;
+        cout << "ERROR: Can't convert to int" << endl;
     }
 
     n++;        //erhöher der Variable zur Zuganzahl
@@ -300,7 +300,7 @@ void MyClient::mode4(){
     return;
 }
 
-void MyClient::mode5(){             //Berechnng der Koordinatenint msgToInt(string msg){
+void MyClient::mode5(){                 //Berechnng der Koordinatenint msgToInt(string msg){
 
     if(search == 2){                    //Wenn der Suchmodus 3 ist (min zwei treffer)
         if(lastHitX == firstHitX){      //Überprüfen, ob das Schiff wagerecht ist

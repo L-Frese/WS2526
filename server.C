@@ -53,7 +53,7 @@ string MyServer::myResponse(string input){
 
         TASK3::ShootResult res = w->shoot(x,y);         //Schießen auf die Koordinaten, speichern des Ergebnisses
 
-        string msg = to_string(res) + "\n";                    //Ergebnis in string speichern
+        string msg = to_string(res);                    //Ergebnis in string speichern
         return msg;
     }
 
